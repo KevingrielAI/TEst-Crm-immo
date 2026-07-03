@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Komfortify — Simulateur EFFAZUR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pu:#7c3aed; --pu2:#8b5cf6; --pu-dk:#5b21b6; --pu-lt:#f5f3ff;
+  --pi:#d946ef; --pi-lt:#fdf4ff;
+  --green:#059669; --red:#e11d48;
+  --grad:linear-gradient(135deg,#7c3aed 0%,#ec4899 100%);
+  --grad2:linear-gradient(135deg,#8b5cf6 0%,#d946ef 100%);
+  --ink:#1e1235; --ink2:#5b5470; --border:#e9e2fb;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Poppins',sans-serif; color:var(--ink); font-weight:600;
+  background:#f8f5ff;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(124,58,237,.08), transparent 40%),
+    radial-gradient(circle at 90% 10%, rgba(217,70,239,.08), transparent 40%),
+    radial-gradient(circle at 50% 90%, rgba(139,92,246,.07), transparent 40%);
+  min-height:100vh;
+}
+h1,h2,h3{margin:0;}
+button{font-family:inherit; cursor:pointer; border:none; font-weight:700;}
+input,select,textarea{font-family:inherit; font-weight:600;}
+
+/* ---------- HEADER ---------- */
+#header{
+  position:sticky; top:0; z-index:50; height:64px;
+  background:#fff; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:16px; padding:0 20px;
+  box-shadow:0 2px 16px rgba(124,58,237,.06);
+}
+#logo{
+  width:36px; height:36px; border-radius:10px; background:var(--grad);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:18px; flex-shrink:0;
+}
+#brand{font-weight:900; font-size:19px; letter-spacing:-.3px; white-space:nowrap;}
+#brand span{background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
+#clientInput{
+  flex:1; max-width:320px; padding:9px 14px; border-radius:10px;
+  border:2px solid var(--border); font-size:14px; transition:.2s cubic-bezier(.34,1.56,.64,1);
+}
+#clientInput:focus{outline:none; border-color:var(--pu2); box-shadow:0 0 0 4px rgba(139,92,246,.15);}
+#headerTotal{margin-left:auto; text-align:right; padding-right:8px;}
+#headerTotal small{display:block; font-size:10px; color:var(--ink2); font-weight:700; text-transform:uppercase; letter-spacing:.5px;}
+#headerTotal b{font-size:22px; font-weight:900; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.hbtn{
+  padding:9px 14px; border-radius:10px; font-size:13px; background:var(--pu-lt); color:var(--pu-dk);
+  transition:.2s cubic-bezier(.34,1.56,.64,1); display:flex; align-items:center; gap:6px;
+}
+.hbtn:hover{transform:translateY(-2px); background:#ece3ff;}
+
+/* ---------- APP GRID ---------- */
+#app{display:grid; grid-template-columns:1fr 380px; gap:18px; padding:18px; max-width:1500px; margin:0 auto;}
+@media (max-width:980px){ #app{grid-template-columns:1fr;} }
+
+/* ---------- LEFT: catalogue ---------- */
+.card{background:#fff; border-radius:16px; padding:18px; box-shadow:0 4px 24px rgba(124,58,237,.06); border:1px solid var(--border);}
+#tabs{display:flex; gap:8px; margin-bottom:16px;}
+.tabBtn{
+  flex:1; padding:12px; border-radius:12px; background:var(--pu-lt); color:var(--pu-dk); font-size:14px;
+  transition:.25s cubic-bezier(.34,1.56,.64,1);
+}
+.tabBtn.active{background:var(--grad); color:#fff; box-shadow:0 6px 18px rgba(124,58,237,.3); transform:translateY(-1px);}
+
+#grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px;}
+.pcard{
+  border:2px solid var(--border); border-radius:14px; padding:16px 12px; text-align:center;
+  transition:.25s cubic-bezier(.34,1.56,.64,1); background:#fff;
+}
+.pcard:hover{transform:translateY(-4px) scale(1.02); border-color:var(--pu2); box-shadow:0 10px 24px rgba(124,58,237,.15);}
+.pcard.selected{border-color:var(--pu); background:var(--pu-lt); box-shadow:0 8px 20px rgba(124,58,237,.2);}
+.pcard .ic{font-size:30px; display:block; margin-bottom:8px;}
+.pcard .lb{font-size:12.5px; line-height:1.3; font-weight:700; color:var(--ink);}
+.pcard .pr{font-size:10.5px; color:var(--ink2); margin-top:4px; font-weight:600;}
+
+/* ---------- CONFIG PANEL (inline) ---------- */
+#configPanel{
+  margin-top:18px; border-radius:16px; padding:20px; background:var(--pi-lt);
+  border:2px solid #f3c6f9; animation:slideIn .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes slideIn{ from{opacity:0; transform:translateY(-10px);} to{opacity:1; transform:translateY(0);} }
+#configPanel.hidden{display:none;}
+#cpTitle{font-size:17px; font-weight:800; margin-bottom:14px; display:flex; align-items:center; gap:8px;}
+.cpRow{display:flex; flex-wrap:wrap; gap:14px; margin-bottom:14px;}
+.cpField{display:flex; flex-direction:column; gap:6px;}
+.cpField label{font-size:11.5px; color:var(--ink2); font-weight:700; text-transform:uppercase; letter-spacing:.4px;}
+.cpField input[type=number], .cpField input[type=text]{
+  padding:10px 12px; border-radius:10px; border:2px solid var(--border); font-size:14px; width:140px;
+}
+.cpField input:focus{outline:none; border-color:var(--pi);}
+.diffBtns{display:flex; gap:6px;}
+.diffBtn{padding:9px 12px; border-radius:8px; background:#fff; border:2px solid var(--border); font-size:12px; color:var(--ink2);}
+.diffBtn.active{background:var(--grad2); color:#fff; border-color:transparent;}
+.chk{display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:10px; background:#fff; border:2px solid var(--border); font-size:12.5px; color:var(--ink2); cursor:pointer;}
+.chk input{width:16px; height:16px; accent-color:var(--pu);}
+#cpPriceBox{
+  display:flex; align-items:center; justify-content:space-between; background:#fff; border-radius:12px;
+  padding:14px 18px; margin:14px 0; box-shadow:0 4px 16px rgba(217,70,239,.12);
+}
+#cpPriceBox b{font-size:26px; font-weight:900; background:var(--grad2); -webkit-background-clip:text; background-clip:text; color:transparent;}
+#cpAddBtn{
+  width:100%; padding:14px; border-radius:12px; background:var(--grad); color:#fff; font-size:15px;
+  transition:.2s cubic-bezier(.34,1.56,.64,1);
+}
+#cpAddBtn:hover{transform:translateY(-2px); box-shadow:0 8px 22px rgba(124,58,237,.35);}
+
+/* ---------- RIGHT: sidebar ---------- */
+#sidebar{
+  background:rgba(255,255,255,.7); backdrop-filter:blur(12px); border-radius:16px;
+  border:1px solid var(--border); padding:18px; height:fit-content; position:sticky; top:82px;
+  box-shadow:0 4px 24px rgba(124,58,237,.08);
+}
+#sidebar h2{font-size:15px; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:8px;}
+#lignes{display:flex; flex-direction:column; gap:8px; max-height:320px; overflow-y:auto; margin-bottom:14px;}
+.ligne{
+  background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px 12px;
+  animation:slideIn .3s cubic-bezier(.34,1.56,.64,1);
+}
+.ligne .top{display:flex; align-items:center; gap:8px;}
+.ligne .top .ic{font-size:18px;}
+.ligne .top .lb{flex:1; font-size:12.5px; font-weight:700;}
+.ligne .top .amt{font-size:13px; font-weight:800; color:var(--pu-dk);}
+.ligne .sub{font-size:10.5px; color:var(--ink2); margin-top:2px;}
+.lbtn{background:none; border:none; font-size:13px; padding:3px 5px; border-radius:6px; color:var(--ink2);}
+.lbtn:hover{background:var(--pu-lt);}
+.lbtn.del:hover{background:#fde2e6; color:var(--red);}
+.stForm{margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+.stForm input{width:60px; padding:6px 8px; border-radius:8px; border:1.5px solid var(--border); font-size:12px;}
+.stForm .stInfo{font-size:10.5px; color:var(--ink2); width:100%;}
+#emptyMsg{text-align:center; padding:30px 10px; color:var(--ink2); font-size:12.5px;}
+
+.field{display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; gap:8px;}
+.field label{font-size:12px; color:var(--ink2); font-weight:700;}
+.field input{width:100px; padding:7px 10px; border-radius:8px; border:1.5px solid var(--border); font-size:13px; text-align:right;}
+.field input:focus{outline:none; border-color:var(--pu2);}
+.sep{height:1px; background:var(--border); margin:12px 0;}
+.totRow{display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; color:var(--ink2);}
+.totRow b{color:var(--ink);}
+.totRow.ttc{font-size:19px; font-weight:900; color:var(--pu-dk); margin-top:8px;}
+#rentaBox{margin-top:12px; padding:12px; border-radius:12px; font-size:12px;}
+#rentaBox.pos{background:#ecfdf5; color:var(--green);}
+#rentaBox.neg{background:#fef1f2; color:var(--red);}
+#genBtn{
+  width:100%; margin-top:14px; padding:15px; border-radius:12px; background:var(--grad); color:#fff; font-size:15px;
+  transition:.2s cubic-bezier(.34,1.56,.64,1);
+}
+#genBtn:hover{transform:translateY(-2px); box-shadow:0 10px 26px rgba(124,58,237,.35);}
+#genBtn:disabled{opacity:.4; cursor:not-allowed; transform:none; box-shadow:none;}
+
+/* ---------- OVERLAYS ---------- */
+.overlay{
+  position:fixed; inset:0; background:rgba(30,18,53,.5); backdrop-filter:blur(4px); z-index:200;
+  display:flex; align-items:flex-start; justify-content:center; padding:30px 16px; overflow-y:auto;
+}
+.overlay.hidden{display:none;}
+.sheet{background:#fff; border-radius:18px; max-width:820px; width:100%; padding:0; box-shadow:0 30px 60px rgba(30,18,53,.35);}
+.sheetHead{display:flex; align-items:center; justify-content:space-between; padding:18px 24px; border-bottom:1px solid var(--border);}
+.sheetHead h2{font-size:17px;}
+.closeX{background:var(--pu-lt); color:var(--pu-dk); width:32px; height:32px; border-radius:50%; font-size:16px;}
+.sheetBody{padding:24px;}
+.sheetFoot{display:flex; gap:10px; padding:16px 24px; border-top:1px solid var(--border);}
+.sheetFoot button{flex:1; padding:12px; border-radius:10px; font-size:13px;}
+.btnGhost{background:var(--pu-lt); color:var(--pu-dk);}
+.btnPrimary{background:var(--grad); color:#fff;}
+
+/* devis print doc */
+#devisDoc{font-family:'Poppins',sans-serif;}
+#devisDoc .dHead{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px;}
+#devisDoc .dLogo{font-size:24px; font-weight:900;}
+#devisDoc .dLogo span{background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
+#devisDoc .dMeta{text-align:right; font-size:12px; color:var(--ink2);}
+#devisDoc table{width:100%; border-collapse:collapse; margin:16px 0; font-size:12.5px;}
+#devisDoc th{background:var(--pu-lt); color:var(--pu-dk); text-align:left; padding:9px 10px; font-size:11px; text-transform:uppercase;}
+#devisDoc td{padding:9px 10px; border-bottom:1px solid var(--border);}
+#devisDoc .dTotals{margin-left:auto; width:260px;}
+#devisDoc .dTotals .r{display:flex; justify-content:space-between; padding:4px 0; font-size:12.5px;}
+#devisDoc .dTotals .ttc{font-size:17px; font-weight:900; color:var(--pu-dk); border-top:2px solid var(--pu); padding-top:8px; margin-top:4px;}
+#devisDoc .dCond{margin-top:20px; font-size:11px; color:var(--ink2); background:var(--pu-lt); padding:12px; border-radius:10px;}
+#sigCanvas{border:2px dashed var(--border); border-radius:10px; touch-action:none; width:100%; height:120px; background:#fff;}
+
+/* history table */
+#histList{width:100%; border-collapse:collapse; font-size:12.5px;}
+#histList th{text-align:left; padding:8px; background:var(--pu-lt); color:var(--pu-dk); font-size:11px;}
+#histList td{padding:8px; border-bottom:1px solid var(--border);}
+.statusPill{padding:3px 9px; border-radius:20px; font-size:10.5px; font-weight:700;}
+.st-attente{background:#fff3d6; color:#926a00;}
+.st-accepte{background:#dcfce7; color:var(--green);}
+.st-refuse{background:#fde2e6; color:var(--red);}
+.st-facture{background:#e0e7ff; color:#3730a3;}
+
+@media print{
+  body *{visibility:hidden;}
+  #devisDoc, #devisDoc *{visibility:visible;}
+  #devisDoc{position:absolute; top:0; left:0; width:100%;}
+}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div id="logo">K</div>
+  <div id="brand">Komfortify<span> · EFFAZUR</span></div>
+  <input id="clientInput" type="text" placeholder="Nom du client...">
+  <button class="hbtn" onclick="openHistory()">🕒 Historique</button>
+  <button class="hbtn" onclick="openConfig()">⚙️ Config</button>
+  <div id="headerTotal"><small>Total TTC</small><b id="headerTotalVal">0,00 €</b></div>
+</div>
+
+<div id="app">
+  <!-- LEFT -->
+  <div>
+    <div class="card">
+      <div id="tabs">
+        <button class="tabBtn active" onclick="switchTab('particulier')" id="tabP">🏠 Particuliers</button>
+        <button class="tabBtn" onclick="switchTab('professionnel')" id="tabPro">🏢 Professionnels</button>
+      </div>
+      <div id="grid"></div>
+
+      <div id="configPanel" class="hidden"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div id="sidebar">
+    <h2>📋 Devis en cours</h2>
+    <div id="lignes"></div>
+
+    <div class="sep"></div>
+    <div class="field"><label>Distance (km A/R)</label><input type="number" id="fKm" value="0" oninput="renderTotals()"></div>
+    <div class="field"><label>Péages (€)</label><input type="number" id="fPeages" value="0" oninput="renderTotals()"></div>
+    <div class="field"><label>Remise (%)</label><input type="number" id="fRemise" value="0" oninput="renderTotals()"></div>
+    <div class="field"><label>Note interne</label><input type="text" id="fNote" placeholder="..." style="width:140px;text-align:left;"></div>
+
+    <div class="sep"></div>
+    <div class="totRow">Sous-total HT <b id="tSousHT">0,00 €</b></div>
+    <div class="totRow">Remise <b id="tRemise">0,00 €</b></div>
+    <div class="totRow">TVA (<span id="tTvaPct">20</span>%) <b id="tTva">0,00 €</b></div>
+    <div class="totRow ttc">Total TTC <b id="tTTC">0,00 €</b></div>
+
+    <div id="rentaBox" class="pos">
+      <b id="rentaMarge">Marge : 0,00 €</b><br>
+      <span id="rentaPct">0% de rentabilité</span>
+    </div>
+
+    <button id="genBtn" onclick="genererDevis()" disabled>🧾 Générer le devis client</button>
+  </div>
+</div>
+
+<!-- OVERLAY: DEVIS -->
+<div class="overlay hidden" id="devisOverlay">
+  <div class="sheet" style="max-width:780px;">
+    <div class="sheetHead">
+      <h2>Devis client</h2>
+      <button class="closeX" onclick="closeOverlay('devisOverlay')">✕</button>
+    </div>
+    <div class="sheetBody">
+      <div id="devisDoc"></div>
+      <div class="sep"></div>
+      <h3 style="font-size:13px;margin-bottom:8px;">✍️ Signature client</h3>
+      <canvas id="sigCanvas" width="700" height="120"></canvas>
+      <div style="margin-top:8px;display:flex;gap:8px;">
+        <button class="hbtn" onclick="clearSig()">Effacer la signature</button>
+      </div>
+    </div>
+    <div class="sheetFoot">
+      <button class="btnGhost" onclick="printDevis()">🖨️ Imprimer / PDF</button>
+      <button class="btnGhost" onclick="emailDevis()">✉️ Envoyer par email</button>
+      <button class="btnPrimary" onclick="saveDevis()">💾 Sauvegarder le devis</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY: HISTORIQUE -->
+<div class="overlay hidden" id="histOverlay">
+  <div class="sheet">
+    <div class="sheetHead">
+      <h2>🕒 Historique des devis</h2>
+      <button class="closeX" onclick="closeOverlay('histOverlay')">✕</button>
+    </div>
+    <div class="sheetBody">
+      <div style="overflow-x:auto;">
+        <table id="histList"></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY: CONFIG -->
+<div class="overlay hidden" id="cfgOverlay">
+  <div class="sheet">
+    <div class="sheetHead">
+      <h2>⚙️ Configuration entreprise</h2>
+      <button class="closeX" onclick="closeOverlay('cfgOverlay')">✕</button>
+    </div>
+    <div class="sheetBody">
+      <div class="cpRow">
+        <div class="cpField"><label>Charges fixes / mois (€)</label><input type="number" id="cCharges"></div>
+        <div class="cpField"><label>Heures travaillées / mois</label><input type="number" id="cHeures"></div>
+        <div class="cpField"><label>Carburant (€/L)</label><input type="number" id="cCarbu" step="0.01"></div>
+        <div class="cpField"><label>Consommation (L/100km)</label><input type="number" id="cConso" step="0.1"></div>
+        <div class="cpField"><label>TVA (%)</label><input type="number" id="cTva"></div>
+        <div class="cpField"><label>Taux ST par défaut (€/h)</label><input type="number" id="cSt"></div>
+      </div>
+      <div class="sep"></div>
+      <div class="cpRow">
+        <div class="cpField"><label>SIRET</label><input type="text" id="cSiret"></div>
+        <div class="cpField"><label>Téléphone</label><input type="text" id="cTel"></div>
+        <div class="cpField"><label>Email</label><input type="text" id="cEmail"></div>
+        <div class="cpField"><label>Adresse</label><input type="text" id="cAdresse" style="width:280px;"></div>
+      </div>
+      <div class="cpField" style="margin-top:10px;">
+        <label>Conditions de paiement</label>
+        <textarea id="cConditions" rows="2" style="width:100%;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;"></textarea>
+      </div>
+    </div>
+    <div class="sheetFoot">
+      <button class="btnPrimary" onclick="saveConfig()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   DONNÉES / CATALOGUE
+   ========================================================= */
+const CAT = {
+  particulier: [
+    {id:'terrasse',    icon:'🪨', label:'Nettoyage Terrasse',          tarif:'surface', pMin:5, pMax:10, diff:true, urg:true, mat:true},
+    {id:'pergola',      icon:'🏡', label:'Nettoyage Pergola',           tarif:'surface', pMin:5, pMax:8,  diff:true, urg:true, mat:true},
+    {id:'facade',       icon:'🏠', label:'Nettoyage Façades',           tarif:'horaire', prix:30, urg:true, mat:true},
+    {id:'vitres',       icon:'🪟', label:'Nettoyage Vitres',            tarif:'horaire', prix:20, fen:true, urg:true, mat:true},
+    {id:'piscine',      icon:'🏊', label:'Nettoyage Piscine',           tarif:'piscine', prix:60, urg:true, mat:true},
+    {id:'finchantier',  icon:'🏗️', label:'Fin de chantier / Bail / Vente', tarif:'surface', pMin:7, pMax:12, diff:true, urg:true, mat:true},
+    {id:'sinistre',     icon:'⚠️', label:'Intervention Sinistre',       tarif:'surface', pMin:7, pMax:10, diff:true, urg:true, mat:true},
+    {id:'festivites',   icon:'🎉', label:'Nettoyage après Festivités',  tarif:'horaire', prix:30, urg:true, mat:true},
+    {id:'mobilhome',    icon:'🏕️', label:'Mobil-home (extérieur)',      tarif:'forfait', prix:150, urg:true, mat:true},
+  ],
+  professionnel: [
+    {id:'poubelles',    icon:'🗑️', label:'Local Poubelles',             tarif:'horaire', prix:50, sortie:true, urg:true, mat:true},
+    {id:'facade-pro',   icon:'🏢', label:'Nettoyage Façades',           tarif:'horaire', prix:30, urg:true, mat:true},
+    {id:'vitres-pro',   icon:'🪟', label:'Nettoyage Vitres',            tarif:'horaire', prix:20, fen:true, urg:true, mat:true},
+    {id:'finchantier-p',icon:'🏗️', label:'Fin de chantier / Bail / Vente', tarif:'surface', pMin:7, pMax:12, diff:true, urg:true, mat:true},
+    {id:'sinistre-p',   icon:'⚠️', label:'Intervention Sinistre',       tarif:'surface', pMin:7, pMax:10, diff:true, urg:true, mat:true},
+    {id:'festivites-p', icon:'🎉', label:'Nettoyage après Festivités',  tarif:'horaire', prix:30, urg:true, mat:true},
+    {id:'mobilhome-p',  icon:'🏕️', label:'Mobil-home (extérieur)',      tarif:'forfait', prix:150, urg:true, mat:true},
+    {id:'locaux',       icon:'🏬', label:'Locaux pro (bureaux/commerces)', tarif:'horaire', prix:25, urg:true, mat:true},
+    {id:'copro',        icon:'🏘️', label:'Nettoyage Copropriété',       tarif:'devis'},
+    {id:'piscine-pro',  icon:'🏊', label:'Piscine professionnelle',     tarif:'devis'},
+  ]
+};
+
+/* =========================================================
+   ÉTAT
+   ========================================================= */
+let currentTab = 'particulier';
+let selectedIdx = null;
+let lignes = [];
+let ligneIdCounter = 1;
+let cfg = loadConfig();
+let sigDrawing = false;
+
+function loadConfig(){
+  const def = {
+    charges:2063, heures:130, carbu:1.90, conso:6.8, tva:20, st:25,
+    siret:'', tel:'', email:'', adresse:'',
+    conditions:'30% à la commande, solde à réalisation de la prestation'
+  };
+  try{
+    const raw = localStorage.getItem('effazur-cfg');
+    return raw ? Object.assign(def, JSON.parse(raw)) : def;
+  }catch(e){ return def; }
+}
+function saveConfigToStorage(){ localStorage.setItem('effazur-cfg', JSON.stringify(cfg)); }
+
+function nextDevisNumber(){
+  let n = parseInt(localStorage.getItem('effazur-devis-counter') || '0', 10) + 1;
+  localStorage.setItem('effazur-devis-counter', String(n));
+  const year = new Date().getFullYear();
+  return `DEV-${year}-${String(n).padStart(3,'0')}`;
+}
+
+/* =========================================================
+   FORMULE DE CALCUL — SOURCE DE VÉRITÉ, NE PAS MODIFIER SANS TESTER
+   ========================================================= */
+function calcHT(p, qty, diff, fen, sortie, urg, mat, custom) {
+  if (custom) return qty;  // Custom: qty IS the price
+  let ht = 0;
+  if (p.tarif === 'surface') {
+    const pu = p.pMin + ((diff - 1) / 2) * (p.pMax - p.pMin);
+    ht = qty * pu;
+  }
+  if (p.tarif === 'horaire') {
+    let rate = p.prix;
+    if (p.fen    && fen)    rate += 5;
+    if (p.sortie && sortie) rate += 10;
+    ht = qty * rate;
+  }
+  if (p.tarif === 'piscine') ht = qty * p.prix;
+  if (p.tarif === 'forfait')  ht = qty * p.prix;
+  ht += (mat || 0);
+  if (p.urg && urg) ht += 125;
+  return ht;
+}
+
+function fmt(n){ return (n||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €'; }
+
+/* =========================================================
+   RENDU: TABS + GRILLE
+   ========================================================= */
+function switchTab(tab){
+  currentTab = tab;
+  document.getElementById('tabP').classList.toggle('active', tab==='particulier');
+  document.getElementById('tabPro').classList.toggle('active', tab==='professionnel');
+  selectedIdx = null;
+  document.getElementById('configPanel').classList.add('hidden');
+  renderGrid();
+}
+
+function renderGrid(){
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  CAT[currentTab].forEach((p, idx) => {
+    const el = document.createElement('div');
+    el.className = 'pcard' + (selectedIdx===idx ? ' selected' : '');
+    let priceLabel = '';
+    if(p.tarif==='surface') priceLabel = `${p.pMin}–${p.pMax} €/m²`;
+    if(p.tarif==='horaire') priceLabel = `${p.prix} €/h`;
+    if(p.tarif==='piscine') priceLabel = `${p.prix} €/passage`;
+    if(p.tarif==='forfait') priceLabel = `${p.prix} €/unité`;
+    if(p.tarif==='devis') priceLabel = 'Sur devis';
+    el.innerHTML = `<span class="ic">${p.icon}</span><span class="lb">${p.label}</span><span class="pr">${priceLabel}</span>`;
+    el.onclick = () => selectCard(idx);
+    grid.appendChild(el);
+  });
+}
+
+/* =========================================================
+   PANNEAU DE CONFIG INLINE (pas de modal)
+   ========================================================= */
+function selectCard(idx){
+  selectedIdx = idx;
+  renderGrid();
+  renderConfigPanel();
+}
+
+function renderConfigPanel(){
+  const panel = document.getElementById('configPanel');
+  if(selectedIdx===null){ panel.classList.add('hidden'); panel.innerHTML=''; return; }
+  const p = CAT[currentTab][selectedIdx];
+  const isCustom = p.tarif === 'devis';
+
+  let html = `<div id="cpTitle">${p.icon} ${p.label}</div>`;
+  html += `<div class="cpRow">`;
+
+  if(isCustom){
+    html += `<div class="cpField"><label>Montant HT (€)</label>
+      <input type="number" id="cpQty" value="0" min="0" oninput="cpUpdate()" onkeydown="cpKey(event)" autofocus></div>`;
+  } else {
+    let qtyLabel = 'Quantité';
+    if(p.tarif==='surface') qtyLabel = 'Surface (m²)';
+    if(p.tarif==='horaire') qtyLabel = 'Durée (heures)';
+    if(p.tarif==='piscine') qtyLabel = 'Nb passages';
+    if(p.tarif==='forfait') qtyLabel = 'Nb unités';
+    html += `<div class="cpField"><label>${qtyLabel}</label>
+      <input type="number" id="cpQty" value="1" min="0" step="0.5" oninput="cpUpdate()" onkeydown="cpKey(event)" autofocus></div>`;
+  }
+
+  if(p.diff){
+    html += `<div class="cpField"><label>Difficulté</label>
+      <div class="diffBtns">
+        <button type="button" class="diffBtn" data-d="1" onclick="cpSetDiff(1)">Léger</button>
+        <button type="button" class="diffBtn active" data-d="2" onclick="cpSetDiff(2)">Standard</button>
+        <button type="button" class="diffBtn" data-d="3" onclick="cpSetDiff(3)">Intensif</button>
+      </div></div>`;
+  }
+
+  if(p.mat){
+    html += `<div class="cpField"><label>Matériel / produits (€)</label>
+      <input type="number" id="cpMat" value="0" min="0" oninput="cpUpdate()"></div>`;
+  }
+  html += `</div>`;
+
+  html += `<div class="cpRow">`;
+  if(p.fen){
+    html += `<label class="chk"><input type="checkbox" id="cpFen" onchange="cpUpdate()"> Avec fenêtres (+5 €/h)</label>`;
+  }
+  if(p.sortie){
+    html += `<label class="chk"><input type="checkbox" id="cpSortie" onchange="cpUpdate()"> Sortie containers (+10 €/h)</label>`;
+  }
+  if(p.urg){
+    html += `<label class="chk"><input type="checkbox" id="cpUrg" onchange="cpUpdate()"> Urgence / Week-end (+125 €)</label>`;
+  }
+  html += `</div>`;
+
+  html += `<div id="cpPriceBox"><span>Prix HT estimé</span><b id="cpPriceVal">0,00 €</b></div>`;
+  html += `<button id="cpAddBtn" onclick="cpAjouter()">➕ Ajouter au devis</button>`;
+
+  panel.innerHTML = html;
+  panel.classList.remove('hidden');
+  panel.dataset.diff = 2;
+  cpUpdate();
+  const qtyEl = document.getElementById('cpQty');
+  if(qtyEl){ qtyEl.focus(); qtyEl.select(); }
+}
+
+function cpSetDiff(d){
+  document.getElementById('configPanel').dataset.diff = d;
+  document.querySelectorAll('.diffBtn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.d,10)===d));
+  cpUpdate();
+}
+
+function cpKey(ev){
+  if(ev.key === 'Enter'){ ev.preventDefault(); cpAjouter(); }
+}
+
+function cpReadValues(){
+  const p = CAT[currentTab][selectedIdx];
+  const isCustom = p.tarif === 'devis';
+  const qty = parseFloat(document.getElementById('cpQty').value) || 0;
+  const diff = parseInt(document.getElementById('configPanel').dataset.diff || '2', 10);
+  const fen = document.getElementById('cpFen') ? document.getElementById('cpFen').checked : false;
+  const sortie = document.getElementById('cpSortie') ? document.getElementById('cpSortie').checked : false;
+  const urg = document.getElementById('cpUrg') ? document.getElementById('cpUrg').checked : false;
+  const mat = document.getElementById('cpMat') ? (parseFloat(document.getElementById('cpMat').value) || 0) : 0;
+  return {p, qty, diff, fen, sortie, urg, mat, custom:isCustom};
+}
+
+function cpUpdate(){
+  const v = cpReadValues();
+  const ht = calcHT(v.p, v.qty, v.diff, v.fen, v.sortie, v.urg, v.mat, v.custom);
+  document.getElementById('cpPriceVal').textContent = fmt(ht);
+}
+
+function cpAjouter(){
+  const v = cpReadValues();
+  const ht = calcHT(v.p, v.qty, v.diff, v.fen, v.sortie, v.urg, v.mat, v.custom);
+  lignes.push({
+    id: ligneIdCounter++,
+    tab: currentTab,
+    pIdx: selectedIdx,
+    custom: v.custom,
+    label: v.p.label,
+    icon: v.p.icon,
+    tarif: v.p.tarif,
+    qty: v.qty,
+    diff: v.diff,
+    fen: v.fen,
+    sortie: v.sortie,
+    urg: v.urg,
+    mat: v.mat,
+    exec: 'propre',
+    stTaux: cfg.st,
+    stH: 0,
+    prixHT: ht
+  });
+  selectedIdx = null;
+  document.getElementById('configPanel').classList.add('hidden');
+  renderGrid();
+  renderLignes();
+  renderTotals();
+}
+
+/* =========================================================
+   SIDEBAR: LIGNES DU DEVIS
+   ========================================================= */
+function renderLignes(){
+  const box = document.getElementById('lignes');
+  if(lignes.length === 0){
+    box.innerHTML = '<div id="emptyMsg">Aucune prestation ajoutée.<br>Cliquez sur une carte à gauche.</div>';
+    document.getElementById('genBtn').disabled = true;
+    return;
+  }
+  document.getElementById('genBtn').disabled = false;
+  box.innerHTML = '';
+  lignes.forEach(l => {
+    const el = document.createElement('div');
+    el.className = 'ligne';
+    let subParts = [];
+    if(l.tarif==='surface') subParts.push(`${l.qty} m² · niv.${l.diff}`);
+    if(l.tarif==='horaire') subParts.push(`${l.qty} h`);
+    if(l.tarif==='piscine') subParts.push(`${l.qty} passage(s)`);
+    if(l.tarif==='forfait') subParts.push(`${l.qty} unité(s)`);
+    if(l.fen) subParts.push('fenêtres');
+    if(l.sortie) subParts.push('sortie containers');
+    if(l.urg) subParts.push('urgence');
+    if(l.mat) subParts.push(`matériel ${fmt(l.mat)}`);
+    if(l.exec==='st') subParts.push(`ST: ${l.stH}h × ${l.stTaux}€`);
+
+    el.innerHTML = `
+      <div class="top">
+        <span class="ic">${l.icon}</span>
+        <span class="lb">${l.label}</span>
+        <span class="amt">${fmt(l.prixHT)}</span>
+        <button class="lbtn" title="Sous-traitance" onclick="toggleST(${l.id})">🤝</button>
+        <button class="lbtn del" title="Supprimer" onclick="delLigne(${l.id})">🗑️</button>
+      </div>
+      <div class="sub">${subParts.join(' · ')}</div>
+      <div class="stFormHolder"></div>
+    `;
+    box.appendChild(el);
+    if(l.stOpen){
+      const holder = el.querySelector('.stFormHolder');
+      holder.innerHTML = `
+        <div class="stForm">
+          <input type="number" value="${l.stTaux}" placeholder="Taux €/h" oninput="updateST(${l.id},'stTaux',this.value)">
+          <span style="font-size:11px;">€/h ×</span>
+          <input type="number" value="${l.stH}" placeholder="Heures" oninput="updateST(${l.id},'stH',this.value)">
+          <span style="font-size:11px;">h</span>
+          <span class="stInfo">Coût ST : ${fmt(l.stTaux*l.stH)} · Marge sur ligne : ${fmt(l.prixHT - l.stTaux*l.stH)}</span>
+        </div>`;
+    }
+  });
+}
+
+function toggleST(id){
+  const l = lignes.find(x=>x.id===id);
+  l.stOpen = !l.stOpen;
+  l.exec = l.stOpen ? 'st' : 'propre';
+  renderLignes();
+  renderTotals();
+}
+function updateST(id, field, val){
+  const l = lignes.find(x=>x.id===id);
+  l[field] = parseFloat(val) || 0;
+  renderLignes();
+  renderTotals();
+}
+function delLigne(id){
+  lignes = lignes.filter(x=>x.id!==id);
+  renderLignes();
+  renderTotals();
+}
+
+/* =========================================================
+   TOTAUX & RENTABILITÉ — SOURCE DE VÉRITÉ
+   ========================================================= */
+function renderTotals(){
+  const km = parseFloat(document.getElementById('fKm').value) || 0;
+  const peages = parseFloat(document.getElementById('fPeages').value) || 0;
+  const remisePct = parseFloat(document.getElementById('fRemise').value) || 0;
+
+  const consommables = lignes.reduce((s,l) => s + (l.mat||0), 0);
+  const sousTotalHT = lignes.reduce((s,l) => s + (l.prixHT||0), 0);
+  const remiseEur = sousTotalHT * (remisePct/100);
+  const baseHT = sousTotalHT - remiseEur;
+  const tva = baseHT * (cfg.tva/100);
+  const ttc = baseHT + tva;
+
+  document.getElementById('tSousHT').textContent = fmt(sousTotalHT);
+  document.getElementById('tRemise').textContent = fmt(remiseEur);
+  document.getElementById('tTvaPct').textContent = cfg.tva;
+  document.getElementById('tTva').textContent = fmt(tva);
+  document.getElementById('tTTC').textContent = fmt(ttc);
+  document.getElementById('headerTotalVal').textContent = fmt(ttc);
+
+  // Rentabilité
+  const heuresPropres = lignes.filter(l=>l.exec!=='st' && l.tarif==='horaire').reduce((s,l)=>s+(l.qty||0),0);
+  const coutCharges = heuresPropres * (cfg.charges / (cfg.heures || 1));
+  const coutDeplacement = km * 2 * (cfg.carbu * cfg.conso / 100) + peages;
+  const coutST = lignes.reduce((s,l)=> s + (l.exec==='st' ? (l.stH*l.stTaux) : 0), 0);
+  const coutRevient = coutDeplacement + consommables + coutCharges + coutST;
+  const marge = baseHT - coutRevient;
+  const margePct = coutRevient > 0 ? (marge / coutRevient * 100) : 0;
+
+  const rentaBox = document.getElementById('rentaBox');
+  rentaBox.className = marge >= 0 ? 'pos' : 'neg';
+  document.getElementById('rentaMarge').textContent = `Marge : ${fmt(marge)}`;
+  document.getElementById('rentaPct').textContent = `${margePct.toFixed(1)}% de rentabilité (coût revient ${fmt(coutRevient)})`;
+}
+
+/* =========================================================
+   OVERLAYS
+   ========================================================= */
+function closeOverlay(id){ document.getElementById(id).classList.add('hidden'); }
+function openOverlay(id){ document.getElementById(id).classList.remove('hidden'); }
+
+/* --- Config --- */
+function openConfig(){
+  document.getElementById('cCharges').value = cfg.charges;
+  document.getElementById('cHeures').value = cfg.heures;
+  document.getElementById('cCarbu').value = cfg.carbu;
+  document.getElementById('cConso').value = cfg.conso;
+  document.getElementById('cTva').value = cfg.tva;
+  document.getElementById('cSt').value = cfg.st;
+  document.getElementById('cSiret').value = cfg.siret;
+  document.getElementById('cTel').value = cfg.tel;
+  document.getElementById('cEmail').value = cfg.email;
+  document.getElementById('cAdresse').value = cfg.adresse;
+  document.getElementById('cConditions').value = cfg.conditions;
+  openOverlay('cfgOverlay');
+}
+function saveConfig(){
+  cfg.charges = parseFloat(document.getElementById('cCharges').value) || 0;
+  cfg.heures = parseFloat(document.getElementById('cHeures').value) || 1;
+  cfg.carbu = parseFloat(document.getElementById('cCarbu').value) || 0;
+  cfg.conso = parseFloat(document.getElementById('cConso').value) || 0;
+  cfg.tva = parseFloat(document.getElementById('cTva').value) || 0;
+  cfg.st = parseFloat(document.getElementById('cSt').value) || 0;
+  cfg.siret = document.getElementById('cSiret').value;
+  cfg.tel = document.getElementById('cTel').value;
+  cfg.email = document.getElementById('cEmail').value;
+  cfg.adresse = document.getElementById('cAdresse').value;
+  cfg.conditions = document.getElementById('cConditions').value;
+  saveConfigToStorage();
+  closeOverlay('cfgOverlay');
+  renderTotals();
+}
+
+/* --- Historique --- */
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem('komfortify-v3') || '[]'); }
+  catch(e){ return []; }
+}
+function saveHistory(list){ localStorage.setItem('komfortify-v3', JSON.stringify(list)); }
+
+function openHistory(){
+  const list = loadHistory().slice().reverse();
+  const table = document.getElementById('histList');
+  if(list.length === 0){
+    table.innerHTML = '<tr><td style="padding:20px;color:var(--ink2);">Aucun devis sauvegardé.</td></tr>';
+  } else {
+    let html = `<tr><th>N°</th><th>Date</th><th>Client</th><th>TTC</th><th>Statut</th><th></th></tr>`;
+    list.forEach(d => {
+      html += `<tr>
+        <td>${d.num || '—'}</td>
+        <td>${d.date}</td>
+        <td>${d.client || '—'}</td>
+        <td>${fmt(d.totalTTC)}</td>
+        <td><select onchange="updateStatus(${d.id}, this.value)" class="statusPill st-${statusClass(d.status)}">
+              ${['attente','accepte','refuse','facture'].map(s=>`<option value="${s}" ${d.status===s?'selected':''}>${statusLabel(s)}</option>`).join('')}
+            </select></td>
+        <td><button class="lbtn del" onclick="deleteDevis(${d.id})">🗑️</button></td>
+      </tr>`;
+    });
+    table.innerHTML = html;
+  }
+  openOverlay('histOverlay');
+}
+function statusClass(s){ return s || 'attente'; }
+function statusLabel(s){ return {attente:'En attente', accepte:'Accepté', refuse:'Refusé', facture:'Facturé'}[s] || 'En attente'; }
+function updateStatus(id, val){
+  const list = loadHistory();
+  const d = list.find(x=>x.id===id);
+  if(d){ d.status = val; saveHistory(list); openHistory(); }
+}
+function deleteDevis(id){
+  saveHistory(loadHistory().filter(x=>x.id!==id));
+  openHistory();
+}
+
+/* --- Devis client / signature --- */
+let currentDevisNum = null;
+
+function genererDevis(){
+  const client = document.getElementById('clientInput').value.trim() || 'Client';
+  currentDevisNum = currentDevisNum || nextDevisNumber();
+  const dateStr = new Date().toLocaleDateString('fr-FR');
+
+  const sousTotalHT = lignes.reduce((s,l) => s + (l.prixHT||0), 0);
+  const remisePct = parseFloat(document.getElementById('fRemise').value) || 0;
+  const remiseEur = sousTotalHT * (remisePct/100);
+  const baseHT = sousTotalHT - remiseEur;
+  const tva = baseHT * (cfg.tva/100);
+  const ttc = baseHT + tva;
+
+  let rows = lignes.map(l => `
+    <tr>
+      <td>${l.icon} ${l.label}</td>
+      <td>${qtyLabelFor(l)}</td>
+      <td style="text-align:right;">${fmt(l.prixHT)}</td>
+    </tr>`).join('');
+
+  document.getElementById('devisDoc').innerHTML = `
+    <div class="dHead">
+      <div class="dLogo">Komfortify<span> · EFFAZUR</span></div>
+      <div class="dMeta">
+        <b>${currentDevisNum}</b><br>
+        Date : ${dateStr}<br>
+        ${cfg.siret ? 'SIRET : '+cfg.siret+'<br>' : ''}
+        ${cfg.tel ? '☎ '+cfg.tel+'<br>' : ''}
+        ${cfg.email ? '✉ '+cfg.email+'<br>' : ''}
+        ${cfg.adresse ? cfg.adresse : ''}
+      </div>
+    </div>
+    <div><b>Client :</b> ${client}</div>
+    <table>
+      <thead><tr><th>Prestation</th><th>Détail</th><th style="text-align:right;">Montant HT</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="dTotals">
+      <div class="r"><span>Sous-total HT</span><span>${fmt(sousTotalHT)}</span></div>
+      <div class="r"><span>Remise (${remisePct}%)</span><span>-${fmt(remiseEur)}</span></div>
+      <div class="r"><span>TVA (${cfg.tva}%)</span><span>${fmt(tva)}</span></div>
+      <div class="r ttc"><span>Total TTC</span><span>${fmt(ttc)}</span></div>
+    </div>
+    <div class="dCond"><b>Conditions :</b> ${cfg.conditions}</div>
+  `;
+  openOverlay('devisOverlay');
+  setTimeout(initSignature, 50);
+}
+
+function qtyLabelFor(l){
+  if(l.custom) return 'Sur devis';
+  if(l.tarif==='surface') return `${l.qty} m² (niv. ${l.diff})`;
+  if(l.tarif==='horaire') return `${l.qty} h${l.fen?' +fenêtres':''}${l.sortie?' +sortie containers':''}`;
+  if(l.tarif==='piscine') return `${l.qty} passage(s)`;
+  if(l.tarif==='forfait') return `${l.qty} unité(s)`;
+  return `${l.qty}`;
+}
+
+function printDevis(){ window.print(); }
+
+function emailDevis(){
+  const client = document.getElementById('clientInput').value.trim() || 'Client';
+  const ttc = document.getElementById('tTTC').textContent;
+  const subject = encodeURIComponent(`Devis EFFAZUR ${currentDevisNum || ''} - ${client}`);
+  const body = encodeURIComponent(
+    `Bonjour ${client},\n\nVeuillez trouver ci-joint votre devis ${currentDevisNum || ''} d'un montant total de ${ttc} TTC.\n\n` +
+    `Merci d'imprimer ou d'exporter ce devis en PDF (bouton "Imprimer / PDF") avant envoi en pièce jointe.\n\n` +
+    `Cordialement,\nEFFAZUR${cfg.tel ? '\n'+cfg.tel : ''}${cfg.email ? '\n'+cfg.email : ''}`
+  );
+  const mailto = `mailto:${encodeURIComponent(cfg.email||'')}?subject=${subject}&body=${body}`;
+  window.location.href = mailto;
+}
+
+function saveDevis(){
+  const client = document.getElementById('clientInput').value.trim() || 'Client';
+  currentDevisNum = currentDevisNum || nextDevisNumber();
+  const sousTotalHT = lignes.reduce((s,l) => s + (l.prixHT||0), 0);
+  const remisePct = parseFloat(document.getElementById('fRemise').value) || 0;
+  const remiseEur = sousTotalHT * (remisePct/100);
+  const baseHT = sousTotalHT - remiseEur;
+  const tva = baseHT * (cfg.tva/100);
+  const ttc = baseHT + tva;
+
+  const sigData = getSignatureData();
+
+  const devis = {
+    id: Date.now(),
+    date: new Date().toLocaleDateString('fr-FR'),
+    client,
+    tab: currentTab,
+    num: currentDevisNum,
+    lignes: JSON.parse(JSON.stringify(lignes)),
+    km: parseFloat(document.getElementById('fKm').value) || 0,
+    peages: parseFloat(document.getElementById('fPeages').value) || 0,
+    conso2: cfg.conso,
+    note: document.getElementById('fNote').value,
+    remise: remisePct,
+    totalHT: baseHT,
+    totalTTC: ttc,
+    status: 'attente',
+    signature: sigData,
+    cfg: JSON.parse(JSON.stringify(cfg))
+  };
+  const list = loadHistory();
+  list.push(devis);
+  saveHistory(list);
+  closeOverlay('devisOverlay');
+  alert(`Devis ${currentDevisNum} sauvegardé.`);
+}
+
+/* --- Signature canvas --- */
+function initSignature(){
+  const canvas = document.getElementById('sigCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle = '#1e1235';
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  let drawing = false;
+  function pos(ev){
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const p = ev.touches ? ev.touches[0] : ev;
+    return { x: (p.clientX - rect.left)*scaleX, y: (p.clientY - rect.top)*scaleY };
+  }
+  function start(ev){ drawing = true; const p = pos(ev); ctx.beginPath(); ctx.moveTo(p.x,p.y); ev.preventDefault(); }
+  function move(ev){ if(!drawing) return; const p = pos(ev); ctx.lineTo(p.x,p.y); ctx.stroke(); ev.preventDefault(); }
+  function end(){ drawing = false; }
+
+  canvas.onmousedown = start; canvas.onmousemove = move; canvas.onmouseup = end; canvas.onmouseleave = end;
+  canvas.ontouchstart = start; canvas.ontouchmove = move; canvas.ontouchend = end;
+}
+function clearSig(){
+  const canvas = document.getElementById('sigCanvas');
+  canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+}
+function getSignatureData(){
+  const canvas = document.getElementById('sigCanvas');
+  if(!canvas) return null;
+  return canvas.toDataURL('image/png');
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+renderGrid();
+renderLignes();
+renderTotals();
+</script>
+</body>
+</html>
